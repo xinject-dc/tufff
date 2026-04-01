@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Example Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: #1a1a2e;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .game-header {
+            background: #16213e;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .back-btn {
+            background: #0f3460;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .back-btn:hover {
+            background: #1a4a7a;
+        }
+
+        .game-title {
+            color: white;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .game-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-canvas-wrapper {
+            background: #0f0f23;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        #gameCanvas {
+            display: block;
+            background: #000;
+            border-radius: 8px;
+        }
+
+        .game-controls {
+            margin-top: 16px;
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+        }
+
+        .fullscreen-btn {
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 12px;
+            transition: background 0.2s;
+        }
+
+        .fullscreen-btn:hover {
+            background: #ff6b6b;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-header">
+        <a href="/index.html" class="back-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back to Games
+        </a>
+        <h1 class="game-title">Example Game</h1>
+    </div>
+
+    <div class="game-container">
+        <div class="game-canvas-wrapper">
+            <!-- YOUR GAME GOES HERE -->
+            <canvas id="gameCanvas" width="800" height="600"></canvas>
+            
+            <div class="game-controls">
+                <p>Use Arrow Keys or WASD to move | Space to jump</p>
+                <button class="fullscreen-btn" onclick="toggleFullscreen()">Fullscreen</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // EXAMPLE GAME CODE - REPLACE WITH YOUR OWN
+        // ============================================
+        
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Simple bouncing ball example
+        let ball = {
+            x: 400,
+            y: 300,
+            vx: 5,
+            vy: 3,
+            radius: 20,
+            color: '#e94560'
+        };
+
+        let player = {
+            x: 350,
+            y: 550,
+            width: 100,
+            height: 15,
+            color: '#4ecca3'
+        };
+
+        let keys = {};
+
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        function update() {
+            // Move player
+            if ((keys['ArrowLeft'] || keys['a']) && player.x > 0) {
+                player.x -= 8;
+            }
+            if ((keys['ArrowRight'] || keys['d']) && player.x < canvas.width - player.width) {
+                player.x += 8;
+            }
+
+            // Move ball
+            ball.x += ball.vx;
+            ball.y += ball.vy;
+
+            // Ball collision with walls
+            if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) {
+                ball.vx = -ball.vx;
+            }
+            if (ball.y - ball.radius < 0) {
+                ball.vy = -ball.vy;
+            }
+
+            // Ball collision with player
+            if (ball.y + ball.radius > player.y &&
+                ball.x > player.x &&
+                ball.x < player.x + player.width) {
+                ball.vy = -Math.abs(ball.vy);
+                ball.vx += (ball.x - (player.x + player.width/2)) / 10;
+            }
+
+            // Ball falls below
+            if (ball.y > canvas.height) {
+                ball.x = 400;
+                ball.y = 300;
+                ball.vx = 5 * (Math.random() > 0.5 ? 1 : -1);
+                ball.vy = 3;
+            }
+        }
+
+        function draw() {
+            // Clear canvas
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw player
+            ctx.fillStyle = player.color;
+            ctx.beginPath();
+            ctx.roundRect(player.x, player.y, player.width, player.height, 5);
+            ctx.fill();
+
+            // Draw ball
+            ctx.fillStyle = ball.color;
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw instructions
+            ctx.fillStyle = '#666';
+            ctx.font = '16px Nunito, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Keep the ball bouncing!', canvas.width/2, 30);
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+
+        // Fullscreen functionality
+        function toggleFullscreen() {
+            const wrapper = document.querySelector('.game-canvas-wrapper');
+            if (!document.fullscreenElement) {
+                wrapper.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+    </script>
+</body>
+</html>
